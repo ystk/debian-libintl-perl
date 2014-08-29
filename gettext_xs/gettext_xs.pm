@@ -1,10 +1,9 @@
 #! /bin/false
 
 # vim: tabstop=4
-# $Id: 6f53b42da67bc1a8b8ddb70e27b8aae9796ad5a3 $
 
 # Pure Perl implementation of Uniforum message translation.
-# Copyright (C) 2002-2009 Guido Flohr <guido@imperia.net>,
+# Copyright (C) 2002-2013 Guido Flohr <guido@imperia.net>,
 # all rights reserved.
 
 # This program is free software; you can redistribute it and/or modify it

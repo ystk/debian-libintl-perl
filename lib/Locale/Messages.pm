@@ -1,9 +1,8 @@
 #! /bin/false
 
 # vim: set autoindent shiftwidth=4 tabstop=4:
-# $Id$
 
-# Copyright (C) 2002-2009 Guido Flohr <guido@imperia.net>,
+# Copyright (C) 2002-2013 Guido Flohr <guido@imperia.net>,
 # all rights reserved.
 
 # This program is free software; you can redistribute it and/or modify it
@@ -27,7 +26,7 @@ use strict;
 
 use vars qw ($package @EXPORT_OK %EXPORT_TAGS @ISA $VERSION);
 
-$VERSION = '1.20';
+$VERSION = '1.23';
 
 # Try to load the C version first.
 $package = 'gettext_xs';
@@ -35,7 +34,7 @@ my $can_xs = 1;
 eval <<'EOF';
 require Locale::gettext_xs; 
 my $version = Locale::gettext_xs::__gettext_xs_version();
-die "Version: $version mismatch (1.20 vs. $version)" unless $version eq '1.20';
+die "Version: version mismatch ($VERSION vs. $version)" unless $version eq $VERSION;
 EOF
 if ($@) {
     $package = 'gettext_pp';
@@ -165,32 +164,40 @@ EOF
 
 # The textdomain could be undef.  We avoid a warning by specifying
 # a filter for the undefined textdomain.
-my %filters = (
-			   undef => \&turn_utf_8_off,
-			   );
+my %filters = (undef => \&turn_utf_8_off);
 
-sub select_package
-{
-	my ($pkg, $compatibility) = @_;
+sub select_package {
+    my ($pkg, $compatibility) = @_;
 
-	# Compatibility quirk for a bug pre 1.17:
-	if (__PACKAGE__ eq $pkg && defined $compatibility) {
-		$pkg = $compatibility;
-	}
+    # Compatibility quirk for a bug pre 1.17:
+    if (__PACKAGE__ eq $pkg && defined $compatibility) {
+        $pkg = $compatibility;
+    }
 
-	if (!$can_xs || (defined $pkg && 'gettext_pp' eq $pkg)) {
-		require Locale::gettext_pp;
-		$package = 'gettext_pp';
-	} else {
-		eval "require Locale::gettext_xs";
-		$package = 'gettext_xs' unless $@;
-	}
+    if (!$can_xs && 'gettext_xs' eq $pkg) {
+        $pkg = 'gettext_pp';
+    }
+
+    if (defined $pkg && 'gettext_pp' eq $pkg) {
+        # This branch is not unnecessary.  The next (elsif) branch does
+        # essentially the same but catches compilation errors.
+        require Locale::gettext_pp;
+        $package = 'gettext_pp';
+    } elsif (defined $pkg) {
+        my $filename = "Locale::$pkg";
+        $filename =~ s{::|\'}{/};
+	$filename .= '.pm';
+        eval { require $filename };
+	$package = $pkg unless $@;   
+    } else {
+        eval "require Locale::gettext_xs";
+        $package = 'gettext_xs' unless $@;
+    }
 
     return $package;
 }
 
-sub bind_textdomain_filter($;$$)
-{
+sub bind_textdomain_filter ($;$$) {
 	my ($textdomain, $coderef, $data) = @_;
 
 	$filters{$textdomain} = [ $coderef, $data ];
@@ -198,198 +205,197 @@ sub bind_textdomain_filter($;$$)
 	return 1;
 }
 
-sub textdomain(;$)
-{
-    'gettext_xs' eq $package ?
-	&Locale::gettext_xs::textdomain :
-	&Locale::gettext_pp::textdomain;
+sub textdomain (;$) {
+    my $function = "Locale::${package}::textdomain";
+    
+    no strict 'refs';
+    &$function;
 }
 
-sub bindtextdomain($;$)
-{
-    'gettext_xs' eq $package ?
-	&Locale::gettext_xs::bindtextdomain :
-	&Locale::gettext_pp::bindtextdomain;
+sub bindtextdomain ($;$) {
+    my $function = "Locale::${package}::bindtextdomain";
+
+    no strict 'refs';
+    &$function;
 }
 
-sub bind_textdomain_codeset($;$)
-{
-    'gettext_xs' eq $package ?
-	&Locale::gettext_xs::bind_textdomain_codeset :
-	&Locale::gettext_pp::bind_textdomain_codeset;
+sub bind_textdomain_codeset ($;$) {
+    my $function = "Locale::${package}::bind_textdomain_codeset";
+
+    no strict 'refs';    
+    &$function;
 }
 
-sub gettext($)
-{
-	my $textdomain = textdomain;
-	$filters{$textdomain} ||= [ \&turn_utf_8_off ];
-	my $cb = $filters{$textdomain};
+sub gettext ($) {
+    my $textdomain = textdomain;
+    $filters{$textdomain} ||= [ \&turn_utf_8_off ];
+    my $cb = $filters{$textdomain};
 
-    $cb->[0] ('gettext_xs' eq $package ?
-		     &Locale::gettext_xs::gettext :
-		     &Locale::gettext_pp::gettext, $cb->[1]);
+    my $function = "Locale::${package}::gettext";
+    
+    no strict 'refs';
+    $cb->[0] (&$function, $cb->[1]);
 }
 
-sub dgettext($$)
-{
-	my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
+sub dgettext($$) {
+    my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
 
-    $cb->[0] ('gettext_xs' eq $package ?
-		     &Locale::gettext_xs::dgettext :
-		     &Locale::gettext_pp::dgettext, $cb->[1]);
+    my $function = "Locale::${package}::dgettext";
+    
+    no strict 'refs';
+    $cb->[0] (&$function, $cb->[1]);
 }
 
-sub dcgettext($$$)
-{
-	my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
+sub dcgettext($$$) {
+    my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
 
-    $cb->[0] ('gettext_xs' eq $package ?
-		     &Locale::gettext_xs::dcgettext :
-		     &Locale::gettext_pp::dcgettext, $cb->[1]);
+    my $function = "Locale::${package}::dcgettext";
+    
+    no strict 'refs';
+    $cb->[0] (&$function, $cb->[1]);
 }
 
-sub ngettext($$$)
-{
-	my $textdomain = textdomain;
-	$filters{$textdomain} ||= [ \&turn_utf_8_off ];
-	my $cb = $filters{$textdomain};
+sub ngettext($$$) {
+    my $textdomain = textdomain;
+    $filters{$textdomain} ||= [ \&turn_utf_8_off ];
+    my $cb = $filters{$textdomain};
 
-    $cb->[0] ('gettext_xs' eq $package ?
-		     &Locale::gettext_xs::ngettext :
-		     &Locale::gettext_pp::ngettext, $cb->[1]);
+    my $function = "Locale::${package}::ngettext";
+    
+    no strict 'refs';
+    $cb->[0] (&$function, $cb->[1]);
 }
 
-sub dngettext($$$$)
-{
-	my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
+sub dngettext($$$$) {
+    my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
 
-    $cb->[0] ('gettext_xs' eq $package ?
-		     &Locale::gettext_xs::dngettext :
-		     &Locale::gettext_pp::dngettext, $cb->[1]);
+    my $function = "Locale::${package}::dngettext";
+    
+    no strict 'refs';
+    $cb->[0] (&$function, $cb->[1]);
 }
 
-sub dcngettext($$$$$)
-{
-	my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
+sub dcngettext($$$$$) {
+    my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
 
-    $cb->[0] ('gettext_xs' eq $package ?
-		     &Locale::gettext_xs::dcngettext :
-		     &Locale::gettext_pp::dcngettext, $cb->[1]);
+    my $function = "Locale::${package}::dcngettext";
+    
+    no strict 'refs';
+    $cb->[0] (&$function, $cb->[1]);
 }
 
-###
-sub pgettext($$)
-{
-	my $textdomain = textdomain;
-	$filters{$textdomain} ||= [ \&turn_utf_8_off ];
-	my $cb = $filters{$textdomain};
+sub pgettext($$) {
+    my $textdomain = textdomain;
+    $filters{$textdomain} ||= [ \&turn_utf_8_off ];
+    my $cb = $filters{$textdomain};
 
-    $cb->[0] ('gettext_xs' eq $package ?
-		     &Locale::gettext_xs::pgettext :
-		     &Locale::gettext_pp::pgettext, $cb->[1]);
+    my $function = "Locale::${package}::pgettext";
+    
+    no strict 'refs';
+    $cb->[0] (&$function, $cb->[1]);
 }
 
-sub dpgettext($$$)
-{
-	my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
+sub dpgettext($$$) {
+    my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
 
-    $cb->[0] ('gettext_xs' eq $package ?
-		     &Locale::gettext_xs::dpgettext :
-		     &Locale::gettext_pp::dpgettext, $cb->[1]);
+    my $function = "Locale::${package}::dpgettext";
+    
+    no strict 'refs';
+    $cb->[0] (&$function, $cb->[1]);
 }
 
-sub dcpgettext($$$$)
-{
-	my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
+sub dcpgettext($$$$) {
+    my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
 
-    $cb->[0] ('gettext_xs' eq $package ?
-		     &Locale::gettext_xs::dcpgettext :
-		     &Locale::gettext_pp::dcpgettext, $cb->[1]);
+    my $function = "Locale::${package}::dcpgettext";
+    
+    no strict 'refs';
+    $cb->[0] (&$function, $cb->[1]);
 }
 
-sub npgettext($$$$)
-{
-	my $textdomain = textdomain;
-	$filters{$textdomain} ||= [ \&turn_utf_8_off ];
-	my $cb = $filters{$textdomain};
+sub npgettext($$$$) {
+    my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
 
-    $cb->[0] ('gettext_xs' eq $package ?
-		     &Locale::gettext_xs::npgettext :
-		     &Locale::gettext_pp::npgettext, $cb->[1]);
+    my $function = "Locale::${package}::npgettext";
+    
+    no strict 'refs';
+    $cb->[0] (&$function, $cb->[1]);
 }
 
-sub dnpgettext($$$$$)
-{
-	my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
+sub dnpgettext($$$$$) {
+    my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
 
-    $cb->[0] ('gettext_xs' eq $package ?
-		     &Locale::gettext_xs::dnpgettext :
-		     &Locale::gettext_pp::dnpgettext, $cb->[1]);
+    my $function = "Locale::${package}::dnpgettext";
+    
+    no strict 'refs';
+    $cb->[0] (&$function, $cb->[1]);
 }
 
-sub dcnpgettext($$$$$$)
-{
-	my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
+sub dcnpgettext($$$$$$) {
+    my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
 
-    $cb->[0] ('gettext_xs' eq $package ?
-		     &Locale::gettext_xs::dcnpgettext :
-		     &Locale::gettext_pp::dcnpgettext, $cb->[1]);
+    my $function = "Locale::${package}::dcnpgettext";
+    
+    no strict 'refs';
+    $cb->[0] (&$function, $cb->[1]);
 }
 
-sub nl_putenv($)
-{
-    'gettext_xs' eq $package ?
-		     &Locale::gettext_xs::nl_putenv :
-		     &Locale::gettext_pp::nl_putenv;
+sub nl_putenv($) {
+    my $cb = $filters{$_[0]} ||= [ \&turn_utf_8_off ];
+
+    my $function = "Locale::${package}::nl_putenv";
+    
+    no strict 'refs';
+    &$function;
 }
 
-sub LC_NUMERIC
-{
-    'gettext_xs' eq $package ?
-	&Locale::gettext_xs::LC_NUMERIC :
-	&Locale::gettext_pp::LC_NUMERIC;
+sub LC_NUMERIC {
+    my $function = "Locale::${package}::LC_NUMERIC";
+    
+    no strict 'refs';
+    &$function;
 }
 
-sub LC_CTYPE
-{
-    'gettext_xs' eq $package ?
-	&Locale::gettext_xs::LC_CTYPE :
-	&Locale::gettext_pp::LC_CTYPE;
+sub LC_CTYPE {
+    my $function = "Locale::${package}::LC_CTYPE";
+    
+    no strict 'refs';
+    &$function;
 }
 
-sub LC_TIME
-{
-    'gettext_xs' eq $package ?
-	&Locale::gettext_xs::LC_TIME :
-	&Locale::gettext_pp::LC_TIME;
+sub LC_TIME {
+    my $function = "Locale::${package}::LC_TIME";
+    
+    no strict 'refs';
+    &$function;
 }
 
-sub LC_COLLATE
-{
-    'gettext_xs' eq $package ?
-	&Locale::gettext_xs::LC_COLLATE :
-	&Locale::gettext_pp::LC_COLLATE;
+sub LC_COLLATE {
+    my $function = "Locale::${package}::LC_COLLATE";
+    
+    no strict 'refs';
+    &$function;
 }
 
-sub LC_MONETARY
-{
-    'gettext_xs' eq $package ?
-	&Locale::gettext_xs::LC_MONETARY :
-	&Locale::gettext_pp::LC_MONETARY;
+sub LC_MONETARY {
+    my $function = "Locale::${package}::LC_MONETARY";
+    
+    no strict 'refs';
+    &$function;
 }
 
-sub LC_MESSAGES
-{
-    'gettext_xs' eq $package ?
-	&Locale::gettext_xs::LC_MESSAGES :
-	&Locale::gettext_pp::LC_MESSAGES;
+sub LC_MESSAGES {
+    my $function = "Locale::${package}::LC_MESSAGES";
+    
+    no strict 'refs';
+    &$function;
 }
 
-sub LC_ALL
-{
-    'gettext_xs' eq $package ?
-	&Locale::gettext_xs::LC_ALL :
-	&Locale::gettext_pp::LC_ALL;
+sub LC_ALL {
+    my $function = "Locale::${package}::LC_ALL";
+    
+    no strict 'refs';
+    &$function;
 }
 
 1;
@@ -494,7 +500,7 @@ target language.  Many C implementations of printf() allow to
 change the order of the arguments, and a French translator could
 then say:
 
-    "C'est le %$2s %$1s."
+    "C'est le %2$s %1$s."
 
 Perl printf() implements this feature as of version 5.8 or better.
 Consequently you can only use it, if you are sure that your software
@@ -769,6 +775,13 @@ script.
 The function was introduced with libintl-perl version 1.03 and is not
 part of the standard gettext API.
 
+Beginning with version 1.22 you can pass other package names than "gettext_pp"
+or "gettext_xs" and use a completely different backend.  It is the caller's
+responsability to make sure that the selected package offers the same
+interface as the two standard packages.
+
+One package that offers that functionality is Locale::gettext_dump(3pm).
+
 =item B<nl_putenv ENVSPEC>
 
 Resembles the ANSI C putenv(3) function.  The sole purpose of this 
@@ -998,7 +1011,7 @@ See Locale::TextDomain(3) for much simpler ways.
 
 =head1 AUTHOR
 
-Copyright (C) 2002-2009, Guido Flohr E<lt>guido@imperia.netE<gt>, all
+Copyright (C) 2002-2013, Guido Flohr E<lt>guido@imperia.netE<gt>, all
 rights reserved.  See the source code for details.
 
 This software is contributed to the Perl community by Imperia 

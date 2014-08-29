@@ -1,10 +1,9 @@
 #! /bin/false
 
 # vim: set autoindent shiftwidth=4 tabstop=4:
-# $Id$
 
 # Internally known aliases for charsets.
-# Copyright (C) 2002-2009 Guido Flohr <guido@imperia.net>,
+# Copyright (C) 2002-2013 Guido Flohr <guido@imperia.net>,
 # all rights reserved.
 
 # This program is free software; you can redistribute it and/or modify it
@@ -723,7 +722,7 @@ on the current format!
 
 =head1 AUTHOR
 
-Copyright (C) 2002-2009, Guido Flohr E<lt>guido@imperia.netE<gt>, all
+Copyright (C) 2002-2013, Guido Flohr E<lt>guido@imperia.netE<gt>, all
 rights reserved.  See the source code for details.
 
 This software is contributed to the Perl community by Imperia 

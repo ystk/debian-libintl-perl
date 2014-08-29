@@ -1,10 +1,9 @@
 #! /bin/false
 
 # vim: set autoindent shiftwidth=4 tabstop=4:
-# $Id$
 
 # High-level interface to Perl i18n.
-# Copyright (C) 2002-2009 Guido Flohr <guido@imperia.net>,
+# Copyright (C) 2002-2013 Guido Flohr <guido@imperia.net>,
 # all rights reserved.
 
 # This program is free software; you can redistribute it and/or modify it
@@ -69,7 +68,7 @@ use Cwd qw (abs_path);
 
 use vars qw ($VERSION);
 
-$VERSION = '1.20';
+$VERSION = '1.23';
 
 require Exporter;
 
@@ -300,9 +299,19 @@ sub import
     # Remember that we still have to bind that textdomain to
     # a directory.
     unless (exists $bound_dirs{$textdomain}) {
-		@search_dirs = map $_ . '/LocaleData', @INC, @default_dirs
-			unless @search_dirs;
-		$bound_dirs{$textdomain} = [@search_dirs];
+		unless (@search_dirs) {
+			@search_dirs = ((map $_ . '/LocaleData', @INC), @default_dirs)
+				unless @search_dirs;
+			if (my $share = eval {
+				require File::ShareDir;
+				File::ShareDir::dist_dir ($textdomain);
+			}) {
+				unshift @search_dirs, 
+                        map { "$share/$_" }
+                        qw (locale LocaleData);
+            }
+		}
+		$bound_dirs{$textdomain} = [grep { -d $_ } @search_dirs];
     }
 	
     Locale::TextDomain->export_to_level (1, $package, @EXPORT);
@@ -495,18 +504,27 @@ to search other directories prior to the default directories.  Specifying
 a differnt search directory is called I<binding> a textdomain to a 
 directory.
 
-B<Locale::TextDomain> extends the default strategy by a Perl
-specific approach.  Unless told otherwise, it will look for a
-directory F<LocaleData> in every component found in the standard
-include path C<@INC> and check for a database containing the message
-for your textdomain there.  Example: If the path 
-F</usr/lib/perl/5.8.0/site_perl> is in your C<@INC>, you can
-install your translation files in F</usr/lib/perl/5.8.0/site_perl/LocaleData>, 
-and they will be found at run-time.
+Beginning with version 1.20, B<Locale::TextDomain> extends the default 
+strategy by a Perl-specific approach.  If L<File::ShareDir> is installed, it 
+will look in the subdirectories named F<locale> and F<LocaleData> (in that 
+order) in the directory returned by C<File::ShareDir::dist_dir ($textdomain)>
+(if L<File::ShareDir> is installed),
+and check for a database containing the message for your textdomain there.
+This allows you to install your database in the Perl-specific shared directory
+using L<Module::Install>'s C<install_share> directive or the Dist::Zilla
+L<ShareDir plugin|Dist::Zilla::Plugin::ShareDir>.
+
+If L<File::ShareDir> is not availabe, or if Locale::TextDomain fails to find
+the translation files in the L<File::ShareDir> directory, it will next look in
+every directory found in the standard include path C<@INC>, and check for a
+database containing the message for your textdomain there. Example: If the
+path F</usr/lib/perl/5.8.0/site_perl> is in your C<@INC>, you can install your
+translation files in F</usr/lib/perl/5.8.0/site_perl/LocaleData>, and they
+will be found at run-time.
 
 =head1 USAGE
 
-It is crucial to remember that you use Locale::TextDoamin(3) as 
+It is crucial to remember that you use Locale::TextDomain(3) as
 specified in the section L</SYNOPSIS>, that means you have to 
 B<use> it, not B<require> it.  The module behaves quite differently 
 compared to other modules.
@@ -519,7 +537,7 @@ as an argument to the use() function.  It actually works like this:
 The first argument (the first string passed to use()) is the textdomain
 of your package, optionally followed by a list of directories to search
 I<instead> of the Perl-specific directories (see above: F</LocaleData>
-appended to every part of C<@INC>).
+appended to a F<File::ShareDir> directory and every path in C<@INC>).
 
 If you are the author of a package 'barfoos', you will probably put
 the line
@@ -535,10 +553,11 @@ your module has been installed properly, including the message catalogs,
 it will then be able to retrieve these translations at run-time.
 
 If you have not installed the translation database in a directory
-F<LocaleData> in the standard include path C<@INC> (or in the system
-directories F</usr/share/locale> resp. F</usr/local/share/locale>), you 
-have to explicitely specify a search path by giving the names of
-directories (as strings!) as additional arguments to use():
+F<LocaleData> in the L<File::ShareDir> directory or the standard include
+path C<@INC> (or in the system directories F</usr/share/locale> resp.
+F</usr/local/share/locale>), you have to explicitely specify a search
+path by giving the names of directories (as strings!) as additional
+arguments to use():
 
     use Locale::TextDomain qw (barfoos ./dir1 ./dir2);
 
@@ -1024,7 +1043,7 @@ overhead for the function calls.
 
 =head1 AUTHOR
 
-Copyright (C) 2002-2009, Guido Flohr E<lt>guido@imperia.netE<gt>, all
+Copyright (C) 2002-2013, Guido Flohr E<lt>guido@imperia.netE<gt>, all
 rights reserved.  See the source code for details.
 
 This software is contributed to the Perl community by Imperia 

@@ -1,10 +1,9 @@
 #! /usr/local/bin/perl -w
 
 # vim: tabstop=4
-# $Id$
 
 # Portable character conversion for Perl.
-# Copyright (C) 2002-2009 Guido Flohr <guido@imperia.net>,
+# Copyright (C) 2002-2013 Guido Flohr <guido@imperia.net>,
 # all rights reserved.
 
 # This program is free software; you can redistribute it and/or modify it
@@ -95,15 +94,15 @@ sub test_harness
 		unless ($has_de_locale) {
 			$xs_disabled = 1;
 			print <<EOF;
-The XS version of libintl-perl cannot be tested on your system because
-the locale definitions for German do not exist.
+The translation features of libintl-perl cannot be tested on your
+system because the locale definitions for German do not exist.
 EOF
 		}
 		$xs_disabled = !$has_de_locale;
 	}
 
 	if ($xs_disabled) {
-		Test::Harness::runtests (grep { ! /_xs.t$/ } sort 
+		Test::Harness::runtests (grep { ! /03[a-z_]+_(?:pp|xs)\.t$/ } sort 
 			{lc $a cmp lc $b } @ARGV);
 	} else {
 		Test::Harness::runtests (sort {lc $a cmp lc $b } @ARGV);

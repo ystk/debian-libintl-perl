@@ -1,7 +1,50 @@
+Version 1.23 - 24 Jan 2013
+
+* New message retrieval backend Locale::gettext_dumb(3pm) which produces
+  translations even, when the corresponding locale is not present in
+  the system.
+
+* Fixed a bug where the Perl backend under certain circumstances clobbered
+  the environment variable LC_ALL.
+
+* Avoid test failures by skipping all tests that depend on the de_AT
+  locale, when that locale is not installed.
+
+* Bugs fixed:
+  https://rt.cpan.org/Ticket/Display.html?id=82856
+
+Version 1.22 - 24 Jan 2013
+
+* Version 1.22 outsmarted PAUSE (the CPAN upload facility) and had to
+  be removed.
+
+Version 1.21 - 15 Jan 2013
+
+* Environment variables LANGUAGE and LANG are interpreted in the same way
+  in the XS and the pure Perl version.
+
+* Package design closer to GNU standards.
+
+* If present, File::ShareDir is used for searching message catalogs.
+
+* Cleaned up distribution.
+
+* Bugs fixed:
+  https://rt.cpan.org/Ticket/Display.html?id=78341
+  https://rt.cpan.org/Ticket/Display.html?id=81315
+  https://rt.cpan.org/Ticket/Display.html?id=79461
+  https://rt.cpan.org/Ticket/Display.html?id=71509
+  https://rt.cpan.org/Ticket/Display.html?id=49744
+  https://rt.cpan.org/Ticket/Display.html?id=49744
+  https://rt.cpan.org/Ticket/Display.html?id=64284
+
 Version 1.20 - 29 Jue 2009
 
 * Test suite revamped.  Failures are now explained better, and it should
   be easier to debug them remotely.
+
+* Bugs fixed:
+  https://rt.cpan.org/Ticket/Display.html?id=49744
 
 Version 1.19 - 19 Jun 2009
 
