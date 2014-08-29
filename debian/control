@@ -1,16 +1,16 @@
 Source: libintl-perl
 Section: perl
 Priority: optional
-Build-Depends: debhelper (>= 7), perl (>= 5.8.0-7)
+Build-Depends: debhelper (>= 9), perl (>= 5.8.0-7), dpkg-dev (>= 1.16.1~)
 Maintainer: Peter Eisentraut <petere@debian.org>
-Standards-Version: 3.8.3
+Standards-Version: 3.9.4
 Homepage: http://search.cpan.org/dist/libintl-perl/
 
 Package: libintl-perl
 Architecture: all
 Depends: ${perl:Depends}, ${misc:Depends}
 Suggests: libintl-xs-perl
-Description: Uniforum message translations system compatible i18n library 
+Description: Uniforum message translations system compatible i18n library
  libintl-perl is an internationalization library for Perl that aims to be
  compatible with the Uniforum message translations system as implemented for
  example in GNU gettext.

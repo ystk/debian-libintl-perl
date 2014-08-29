@@ -1,10 +1,9 @@
 #! /bin/false
 
 # vim: set autoindent shiftwidth=4 tabstop=4:
-# $Id$
 
 # Portable methods for locale handling.
-# Copyright (C) 2002-2009 Guido Flohr <guido@imperia.net>,
+# Copyright (C) 2002-2013 Guido Flohr <guido@imperia.net>,
 # all rights reserved.
 
 # This program is free software; you can redistribute it and/or modify it
@@ -73,7 +72,13 @@ use constant LANG2COUNTRY => {
     da => 'DK', # Danish => Denmark
     de => 'DE', # German => Germany
     dz => 'BT', # Dzongkha => Bhutan
+    el => 'GR', # Greek => Greece
     en => 'US', # English => United States
+    es => 'ES', # Actually Mexico and the US have more Spanish speakers
+                # than Spain.  But it can be assumed that they either add
+                # the country to their browser settings or will not care
+                # to much.
+    et => 'EE', # Estonian => Estonia
     fa => 'IR', # Iran, Islamic Republic of
     fi => 'FI', # Finnish => Finland
     fj => 'FJ', # Fijian => Fiji
@@ -171,7 +176,7 @@ use constant LANG2COUNTRY => {
     sg => '??', # Sango => Central African Republic
     si => 'LK', # Sinhalese => Sri Lanka
     sk => 'SK', # Slovakian => Slovakia
-    sl => 'SL', # Slovenian => Slovenia
+    sl => 'SI', # Slovenian => Slovenia
     sm => 'WS', # Samoan => Samoa
     sh => 'ZW', # Shona => Zimbabwe (FIXME: Rather Mozambique?)
     so => 'SO', # Somali => Somalia
@@ -1182,7 +1187,7 @@ production code.
 
 =head1 AUTHOR
 
-Copyright (C) 2002-2009, Guido Flohr E<lt>guido@imperia.netE<gt>, all
+Copyright (C) 2002-2013, Guido Flohr E<lt>guido@imperia.netE<gt>, all
 rights reserved.  See the source code for details.
 
 This software is contributed to the Perl community by Imperia 

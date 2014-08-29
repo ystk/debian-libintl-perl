@@ -1,8 +1,7 @@
 /* -*- C -*- */
-/* $Id: e3434ed8b7cc0733c92ccc0a876eef6f699b5d30 $ */
 /*
 # Perl binding for Uniforum message translation.
-# Copyright (C) 2002-2009 Guido Flohr <guido@imperia.net>,
+# Copyright (C) 2002-2013 Guido Flohr <guido@imperia.net>,
 # all rights reserved.
 
 # This program is free software; you can redistribute it and/or modify it
@@ -249,7 +248,7 @@ _bindtextdomain (domain = NULL, dirname = NULL)
     CODE:
 	/* Treat empty or undefined strings as NULL.  */
 	if (!domain || domain[0] == '\000')
-		domain = NULL;
+		XSRETURN_UNDEF;
 	if (!dirname || dirname[0] == '\000')
 		dirname = NULL;
 	RETVAL = (char*) bindtextdomain (domain, dirname);

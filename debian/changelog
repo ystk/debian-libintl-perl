@@ -1,3 +1,13 @@
+libintl-perl (1.23-1) unstable; urgency=low
+
+  * New upstream release
+  * Updated standards version
+  * Changed to Debhelper level 9
+  * Added build-arch and build-indep targets
+  * Fixed application of Debian build flags for hardening
+
+ -- Peter Eisentraut <petere@debian.org>  Sat, 29 Jun 2013 21:23:42 -0400
+
 libintl-perl (1.20-1) unstable; urgency=low
 
   * New upstream release (closes: #547983)
