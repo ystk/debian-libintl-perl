@@ -1,3 +1,10 @@
+libintl-perl (1.23-1+deb8u1) jessie-security; urgency=high
+
+  * Non-maintainer upload.
+  * Remove . from @INC when loading modules dynamically [CVE-2016-1238]
+
+ -- Dominic Hargreaves <dom@earth.li>  Sun, 24 Jul 2016 22:20:48 +0100
+
 libintl-perl (1.23-1) unstable; urgency=low
 
   * New upstream release
